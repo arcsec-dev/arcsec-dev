@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibeSec — Security for AI-Built Applications",
+  title: "VibeSec | AI Security for AI-Built Applications",
   description:
-    "Scan your AI-generated applications for security vulnerabilities and receive AI-powered remediation in seconds.",
+    "Detect vulnerabilities, understand security risks, and automatically generate secure fixes before deployment.",
 };
 
 export default function RootLayout({
