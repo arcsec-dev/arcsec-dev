@@ -9,12 +9,14 @@ backend/__pycache__/
 # =========================
 # Uploads & Temp Files
 # =========================
-backend/uploads/incoming/*.zip
-backend/uploads/incoming/*
+# Uploads
+backend/uploads/**
+!backend/uploads/.gitkeep
+!backend/uploads/incoming/
 !backend/uploads/incoming/.gitkeep
 
-backend/uploads/.gitkeep
-backend/temp/*
+# Temporary extraction
+backend/temp/**
 !backend/temp/.gitkeep
 
 # =========================
