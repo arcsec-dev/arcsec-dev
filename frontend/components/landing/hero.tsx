@@ -22,9 +22,12 @@ export function Hero() {
 
       const result = await uploadProject(file);
 
-      console.log(result);
+      sessionStorage.setItem(
+        "scanResult",
+        JSON.stringify(result)
+      );
 
-      alert("Scan completed! Check the browser console.");
+      window.location.href = "/results";
     } catch (error) {
       console.error(error);
       alert("Upload failed.");
