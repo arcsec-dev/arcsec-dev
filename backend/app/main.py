@@ -7,11 +7,23 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 from app.services.analyzer import analyze_project
 from app.services.scanner import run_security_scan
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="VibeSec API",
     description="Backend API for VibeSec",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 UPLOAD_DIR = Path("uploads/incoming")
