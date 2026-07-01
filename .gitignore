@@ -5,6 +5,8 @@ backend/.venv/
 backend/__pycache__/
 **/__pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 
 # =========================
 # Uploads & Temp Files
@@ -20,16 +22,23 @@ backend/temp/**
 !backend/temp/.gitkeep
 
 # =========================
+# Logs
+# =========================
+*.log
+
+# =========================
 # Node
 # =========================
 frontend/node_modules/
 frontend/.next/
+frontend/out/
 
 # =========================
 # Environment Variables
 # =========================
 .env
-.env.local
+.env.*
+!.env.example
 
 # =========================
 # IDE
@@ -42,3 +51,17 @@ frontend/.next/
 # =========================
 Thumbs.db
 .DS_Store
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Misc
+# =========================
+*.zip
+*.tar
+*.gz
