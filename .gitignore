@@ -1,29 +1,42 @@
+# =========================
 # Python
+# =========================
 backend/.venv/
-backend/uploads/
-backend/temp/
-__pycache__/
-*.pyc
+backend/__pycache__/
+**/__pycache__/
+*.py[cod]
 
+# =========================
+# Uploads & Temp Files
+# =========================
+backend/uploads/incoming/*.zip
+backend/uploads/incoming/*
+!backend/uploads/incoming/.gitkeep
+
+backend/uploads/.gitkeep
+backend/temp/*
+!backend/temp/.gitkeep
+
+# =========================
 # Node
+# =========================
 frontend/node_modules/
 frontend/.next/
 
-# Environment
+# =========================
+# Environment Variables
+# =========================
 .env
 .env.local
 
-# OS
-Thumbs.db
-.DS_Store
-
+# =========================
 # IDE
+# =========================
 .vscode/
 .idea/
 
-# Python
-backend/.venv/
-backend/uploads/
-backend/temp/
-__pycache__/
-*.pyc
+# =========================
+# OS
+# =========================
+Thumbs.db
+.DS_Store
