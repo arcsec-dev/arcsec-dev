@@ -5,8 +5,10 @@ from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
+from app.models.finding import Finding
 from app.services.analyzer import analyze_project
 from app.services.scanner import run_security_scan
+from app.services.dependency_scanner import scan_dependencies
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -42,7 +44,7 @@ class UploadResponse(TypedDict):
     uploadId: str
     originalFilename: str
     project: dict[str, Any]
-    findings: list[dict[str, Any]]
+    findings: list[Finding]
 
 
 @app.get("/health")
@@ -97,7 +99,9 @@ async def upload(file: UploadFile = File(...)) -> UploadResponse:
     # Security Scan
     # --------------------------------------------------
     try:
-        findings = run_security_scan(extract_path)
+        semgrep_findings = run_security_scan(extract_path)
+        dependency_findings = scan_dependencies(extract_path)
+        findings = semgrep_findings + dependency_findings
     except RuntimeError as e:
         findings = [
             {
