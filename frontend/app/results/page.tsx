@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Stats } from "@/components/results/stats";
+import { Findings } from "@/components/results/findings";
+import { ProjectSummary } from "@/components/results/project-summary";
 
 export default function ResultsPage() {
   const [result, setResult] = useState<any>(null);
@@ -24,14 +27,26 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-10">
-      <h1 className="mb-8 text-4xl font-bold">
-        Scan Results
-      </h1>
-
-      <pre className="overflow-auto rounded-lg bg-zinc-900 p-6 text-sm text-white">
-        {JSON.stringify(result, null, 2)}
-      </pre>
+    <main className="mx-auto min-h-screen max-w-6xl space-y-8 p-10">
+      <div>
+        <h1 className="text-4xl font-bold">
+          Scan Results
+        </h1>
+  
+        <p className="mt-2 text-green-500 font-medium">
+          ✓ Scan completed successfully
+        </p>
+      </div>
+  
+      <Stats
+        findings={result.findings.length}
+        files={result.project.files}
+        languages={result.project.language.length}
+      />
+  
+      <ProjectSummary project={result.project} />
+  
+      <Findings findings={result.findings} />
     </main>
   );
 }
