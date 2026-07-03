@@ -1,15 +1,17 @@
 import zipfile
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import TypedDict
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.finding import Finding
+from app.models.report import ScanReport
 from app.services.analyzer import analyze_project
-from app.services.scanner import run_security_scan
 from app.services.dependency_scanner import scan_dependencies
-from fastapi.middleware.cors import CORSMiddleware
+from app.services.report_builder import build_scan_report
+from app.services.scanner import run_security_scan
 
 app = FastAPI(
     title="VibeSec API",
@@ -39,28 +41,20 @@ class HealthResponse(TypedDict):
     status: str
 
 
-class UploadResponse(TypedDict):
-    status: str
-    uploadId: str
-    originalFilename: str
-    project: dict[str, Any]
-    findings: list[Finding]
-
-
 @app.get("/health")
 def health() -> HealthResponse:
     return {"status": "ok"}
 
 
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)) -> UploadResponse:
+@app.post("/upload", response_model=ScanReport)
+async def upload(file: UploadFile = File(...)) -> ScanReport:
     # --------------------------------------------------
     # Validate Upload
     # --------------------------------------------------
     if not file.filename.lower().endswith(".zip"):
         raise HTTPException(
             status_code=400,
-            detail="Only ZIP files are allowed."
+            detail="Only ZIP files are allowed.",
         )
 
     # --------------------------------------------------
@@ -96,30 +90,36 @@ async def upload(file: UploadFile = File(...)) -> UploadResponse:
     )
 
     # --------------------------------------------------
-    # Security Scan
+    # Run Scanners
     # --------------------------------------------------
     try:
         semgrep_findings = run_security_scan(extract_path)
         dependency_findings = scan_dependencies(extract_path)
+
         findings = semgrep_findings + dependency_findings
+
     except RuntimeError as e:
+
         findings = [
-            {
-                "title": "Scanner Error",
-                "severity": "ERROR",
-                "file": "",
-                "line": 0,
-                "message": str(e),
-            }
+            Finding(
+                title="Scanner Error",
+                severity="ERROR",
+                file="",
+                line=0,
+                message=str(e),
+                source="VibeSec",
+                snippet="",
+            )
         ]
 
     # --------------------------------------------------
-    # Response
+    # Build Professional Report
     # --------------------------------------------------
-    return {
-        "status": "success",
-        "uploadId": upload_id,
-        "originalFilename": file.filename,
-        "project": project_info,
-        "findings": findings,
-    }
+    report = build_scan_report(
+        status="success",
+        upload_id=upload_id,
+        project_info=project_info,
+        findings=findings,
+    )
+
+    return report

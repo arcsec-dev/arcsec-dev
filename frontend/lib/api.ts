@@ -13,5 +13,9 @@ export async function uploadProject(file: File) {
     throw new Error("Upload failed.");
   }
 
-  return response.json();
+  const data = await response.json();
+
+  console.log(data);
+
+  return data;
 }

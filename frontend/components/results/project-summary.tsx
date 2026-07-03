@@ -1,56 +1,70 @@
 type Project = {
-    projectName: string;
-    language: string[];
-    framework: string;
-    files: number;
-    directories: number;
-  };
-  
-  export function ProjectSummary({ project }: { project: Project }) {
-    return (
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <h2 className="mb-6 text-2xl font-semibold">
-          Project Summary
-        </h2>
-  
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Project</p>
-            <p className="font-medium">{project.projectName}</p>
-          </div>
-  
-          <div>
-            <p className="text-sm text-muted-foreground">Framework</p>
-            <p className="font-medium">{project.framework}</p>
-          </div>
-  
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">
-                Languages
-            </p>
+  projectName: string;
+  framework: string;
+  language: string[];
+  files: number;
+  directories: number;
+};
 
-            <div className="flex flex-wrap gap-2">
-                {project.language.map((lang) => (
-                <span
-                    key={lang}
-                    className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-sm font-medium text-cyan-300"
-                >
-                    {lang}
-                </span>
-                ))}
-            </div>
-            </div>
-  
-          <div>
-            <p className="text-sm text-muted-foreground">Files</p>
-            <p className="font-medium">{project.files}</p>
-          </div>
-  
-          <div>
-            <p className="text-sm text-muted-foreground">Directories</p>
-            <p className="font-medium">{project.directories}</p>
-          </div>
-        </div>
+export function ProjectSummary({
+  project,
+}: {
+  project: Project;
+}) {
+  return (
+    <section className="rounded-xl border bg-card p-8 shadow-sm">
+      <h2 className="text-2xl font-semibold">
+        Project Information
+      </h2>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+
+        <InfoRow
+          label="Project Name"
+          value={project.projectName}
+        />
+
+        <InfoRow
+          label="Framework"
+          value={project.framework}
+        />
+
+        <InfoRow
+          label="Languages"
+          value={project.language.join(", ")}
+        />
+
+        <InfoRow
+          label="Files"
+          value={project.files.toString()}
+        />
+
+        <InfoRow
+          label="Directories"
+          value={project.directories.toString()}
+        />
+
       </div>
-    );
-  }
+    </section>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border p-4">
+      <p className="text-sm text-muted-foreground">
+        {label}
+      </p>
+
+      <p className="mt-2 text-lg font-semibold">
+        {value}
+      </p>
+    </div>
+  );
+}

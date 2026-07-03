@@ -5,7 +5,7 @@ from pathlib import Path
 from app.models.finding import Finding
 from app.services.snippet import extract_snippet
 
-
+# Convert Semgrep severities into VibeSec severities
 SEVERITY_MAP = {
     "ERROR": "CRITICAL",
     "WARNING": "MEDIUM",
@@ -15,7 +15,8 @@ SEVERITY_MAP = {
 
 def run_security_scan(project_path: Path) -> list[Finding]:
     """
-    Run Semgrep against a project and return Finding objects.
+    Run a Semgrep security scan against the extracted project.
+    Returns a list of Finding objects.
     """
 
     try:
@@ -38,6 +39,8 @@ def run_security_scan(project_path: Path) -> list[Finding]:
             "Semgrep is not installed or not available in PATH."
         )
 
+    # 0 = No findings
+    # 1 = Findings detected
     if result.returncode not in (0, 1):
         raise RuntimeError(result.stderr)
 
@@ -50,8 +53,6 @@ def run_security_scan(project_path: Path) -> list[Finding]:
         )
 
     findings: list[Finding] = []
-
-    print(f"Semgrep findings: {len(data.get('results', []))}")
 
     for issue in data.get("results", []):
 
@@ -66,12 +67,28 @@ def run_security_scan(project_path: Path) -> list[Finding]:
             raw_severity,
         )
 
-        file_path = issue["path"]
+        original_path = Path(issue["path"])
+
+        # Convert absolute or extracted paths into project-relative paths
+        try:
+            relative_path = original_path.relative_to(project_path)
+        except ValueError:
+            try:
+                parts = original_path.parts
+
+                if project_path.name in parts:
+                    index = parts.index(project_path.name)
+                    relative_path = Path(*parts[index + 1 :])
+                else:
+                    relative_path = original_path.name
+            except Exception:
+                relative_path = Path(original_path.name)
+
         line = issue["start"]["line"]
 
         snippet = extract_snippet(
             project_path,
-            file_path,
+            str(original_path),
             line,
         )
 
@@ -79,14 +96,12 @@ def run_security_scan(project_path: Path) -> list[Finding]:
             Finding(
                 title=issue["check_id"],
                 severity=severity,
-                file=file_path,
+                file=str(relative_path).replace("\\", "/"),
                 line=line,
                 message=issue["extra"]["message"],
                 source="Semgrep",
                 snippet=snippet,
             )
         )
-
-    print(f"Parsed findings: {len(findings)}")
 
     return findings
