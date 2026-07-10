@@ -17,10 +17,20 @@ class Finding(BaseModel):
         "UNKNOWN",
     ]
 
+    category: str = "Other"
+
     file: str
+
     line: int
 
     message: str
+
     source: str
 
     snippet: str = ""
+
+    explanation: str = ""
+
+    recommendation: str = ""
+
+    secure_code: str = ""

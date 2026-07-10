@@ -9,7 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.models.finding import Finding
 from app.models.report import ScanReport
 from app.services.analyzer import analyze_project
+from app.services.categorizer import categorize_finding
 from app.services.dependency_scanner import scan_dependencies
+from app.services.recommendation_engine import enrich_finding
+from app.services.report_builder import build_scan_report
+from app.services.scanner import run_security_scan
 from app.services.report_builder import build_scan_report
 from app.services.scanner import run_security_scan
 
@@ -90,25 +94,34 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
     )
 
     # --------------------------------------------------
-    # Run Scanners
+    # Run Security Scanners
     # --------------------------------------------------
     try:
         semgrep_findings = run_security_scan(extract_path)
         dependency_findings = scan_dependencies(extract_path)
 
-        findings = semgrep_findings + dependency_findings
+        raw_findings = semgrep_findings + dependency_findings
 
+        findings = [
+            enrich_finding(
+                categorize_finding(finding)
+            )
+            for finding in raw_findings
+        ]
     except RuntimeError as e:
-
         findings = [
             Finding(
                 title="Scanner Error",
                 severity="ERROR",
+                category="System",
                 file="",
                 line=0,
                 message=str(e),
                 source="VibeSec",
                 snippet="",
+                explanation="",
+                recommendation="Verify the scanner installation and configuration.",
+                secure_code="",
             )
         ]
 

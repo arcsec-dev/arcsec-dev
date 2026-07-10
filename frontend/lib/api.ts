@@ -1,6 +1,8 @@
+import type { ScanReport } from "@/types/report";
+
 const API_BASE = "http://127.0.0.1:8000";
 
-export async function uploadProject(file: File) {
+export async function uploadProject(file: File): Promise<ScanReport> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -15,7 +17,5 @@ export async function uploadProject(file: File) {
 
   const data = await response.json();
 
-  console.log(data);
-
-  return data;
+  return data as ScanReport;
 }

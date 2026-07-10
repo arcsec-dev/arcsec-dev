@@ -1,0 +1,5 @@
+# VibeSec 
+
+VibeSec is an AI Security Engineer. 
+
+Goal: Users upload a ZIP project. VibeSec analyzes it. A professional security report is generated. The user reviews the report. The user approves repairs. VibeSec fixes the project. The user downloads a secured ZIP. Current Status: - Upload API complete - ZIP extraction complete - Project analyzer complete - Semgrep scanner complete - Dependency scanner complete - Finding categorizer complete - Report builder complete - Professional report UI mostly complete Architecture Backend FastAPI Frontend Next.js TypeScript TailwindCSS shadcn/ui Rules Never break existing functionality. Always reuse existing UI components. Never create duplicate components. Prefer composition over duplication. Maintain strict typing. Backend models and frontend types must stay synchronized. Every milestone must compile before moving to the next one. Always preserve existing features while adding new ones. After making changes: - Run lint - Run type checking - Fix errors - Explain changes

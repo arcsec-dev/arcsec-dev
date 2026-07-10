@@ -1,3 +1,5 @@
+import { StatCard } from "@/components/ui/stat-card";
+
 type Props = {
     findings: number;
     files: number;
@@ -27,24 +29,12 @@ type Props = {
     return (
       <div className="grid gap-4 md:grid-cols-4">
         {cards.map((card) => (
-          <div
+          <StatCard
             key={card.title}
-            className="rounded-xl border bg-card p-6 shadow-sm"
-          >
-            <p className="text-sm text-muted-foreground">
-              {card.title}
-            </p>
-  
-            <h2
-                className={`mt-2 text-3xl font-bold ${
-                    card.title === "Risk Score"
-                    ? "text-green-400"
-                    : ""
-                }`}
-                >
-                {card.value}
-            </h2>
-          </div>
+            title={card.title}
+            value={card.value}
+            valueClassName={card.title === "Risk Score" ? "text-green-400" : undefined}
+          />
         ))}
       </div>
     );
