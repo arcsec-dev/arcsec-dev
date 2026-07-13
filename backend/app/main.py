@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse  
 
 from app.models.finding import Finding
 from app.models.report import ScanReport
@@ -14,8 +15,7 @@ from app.services.dependency_scanner import scan_dependencies
 from app.services.recommendation_engine import enrich_finding
 from app.services.report_builder import build_scan_report
 from app.services.scanner import run_security_scan
-from app.services.report_builder import build_scan_report
-from app.services.scanner import run_security_scan
+from app.services.repair_engine import RepairEngine
 
 app = FastAPI(
     title="VibeSec API",
@@ -40,10 +40,20 @@ TEMP_DIR = Path("temp")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
+# --------------------------------------------------
+# Active Uploads (MVP)
+# --------------------------------------------------
+
+ACTIVE_PROJECTS: dict[str, Path] = {}
 
 class HealthResponse(TypedDict):
     status: str
 
+from pydantic import BaseModel
+
+
+class RepairRequest(BaseModel):
+    uploadId: str
 
 @app.get("/health")
 def health() -> HealthResponse:
@@ -79,6 +89,8 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
     # --------------------------------------------------
     extract_path = TEMP_DIR / upload_id
     extract_path.mkdir(parents=True, exist_ok=True)
+
+    ACTIVE_PROJECTS[upload_id] = extract_path
 
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(extract_path)
@@ -136,3 +148,35 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
     )
 
     return report
+
+@app.post("/repair")
+async def repair(request: RepairRequest):
+    project_path = ACTIVE_PROJECTS.get(request.uploadId)
+
+    if project_path is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found.",
+        )
+
+    engine = RepairEngine()
+
+    result = engine.repair_project(project_path)
+
+    return result
+
+@app.get("/download/{upload_id}")
+async def download(upload_id: str):
+    zip_path = TEMP_DIR / f"{upload_id}_secured.zip"
+
+    if not zip_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Secure project not found.",
+        )
+
+    return FileResponse(
+        path=zip_path,
+        filename="secured-project.zip",
+        media_type="application/zip",
+    )
