@@ -1,8 +1,10 @@
 from pathlib import Path
 from typing import TypedDict
-from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+
+from app.services.upload_service import save_uploaded_file
+from app.utils.zip_utils import validate_zip
 
 app = FastAPI(
     title="VibeSec API",
@@ -39,13 +41,15 @@ async def upload(file: UploadFile = File(...)) -> UploadResponse:
             detail="Only ZIP files are allowed.",
         )
 
-    # Generate a unique filename
-    upload_id = str(uuid4())
-    destination = UPLOAD_DIR / f"{upload_id}.zip"
-
     # Save uploaded file
-    with open(destination, "wb") as buffer:
-        buffer.write(await file.read())
+    upload_id, saved_path = await save_uploaded_file(file)
+
+    # Validate that the uploaded file is a real ZIP archive
+    if not validate_zip(saved_path):
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded file is not a valid ZIP archive.",
+        )
 
     return {
         "status": "success",
