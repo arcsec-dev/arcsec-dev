@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import TypedDict
+from app.services.extractor import extract_zip
+from app.services.detector import detect_project_type
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
@@ -25,6 +27,7 @@ class UploadResponse(TypedDict):
     status: str
     uploadId: str
     originalFilename: str
+    projectType: str
 
 
 @app.get("/health")
@@ -50,9 +53,13 @@ async def upload(file: UploadFile = File(...)) -> UploadResponse:
             status_code=400,
             detail="Uploaded file is not a valid ZIP archive.",
         )
+    # Extract the ZIP
+    extracted_path = extract_zip(saved_path, upload_id)
+    project_type = detect_project_type(extracted_path)
 
     return {
         "status": "success",
         "uploadId": upload_id,
         "originalFilename": file.filename,
+        "projectType": project_type,
     }
