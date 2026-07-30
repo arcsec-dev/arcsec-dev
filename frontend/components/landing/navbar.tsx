@@ -1,33 +1,42 @@
-import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-
-const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
-];
+import Link from "next/link";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-xl">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:px-8">
-        <Logo />
-
-        <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-            >
-              {link.label}
-            </a>
-          ))}
+    <nav className="w-full sticky top-0 z-50 bg-surface border-b border-line-mute shadow-[4px_4px_0px_0px_rgba(14,14,14,1)]">
+      <div className="max-w-[1240px] mx-auto px-6 md:px-[40px] flex items-center justify-between h-20">
+        <Link 
+          href="/" 
+          className="font-display-lg text-4xl text-on-surface tracking-tighter hover:opacity-90 transition-opacity"
+        >
+          ARCSEC.
+        </Link>
+        <div className="hidden md:flex gap-6 items-center">
+          <a 
+            className="font-technical-sm text-xs uppercase tracking-wider text-signal font-bold border-b-2 border-signal pb-1 hover:-translate-x-0.5 hover:-translate-y-0.5 transition-transform duration-150" 
+            href="#features"
+          >
+            Product
+          </a>
+          <a 
+            className="font-technical-sm text-xs uppercase tracking-wider text-on-surface-variant hover:text-on-surface hover:-translate-x-0.5 hover:-translate-y-0.5 transition-transform duration-150" 
+            href="#how-it-works"
+          >
+            How it works
+          </a>
+          <a 
+            className="font-technical-sm text-xs uppercase tracking-wider text-on-surface-variant hover:text-on-surface hover:-translate-x-0.5 hover:-translate-y-0.5 transition-transform duration-150" 
+            href="/results"
+          >
+            Dashboard
+          </a>
         </div>
-
-        <Button size="sm" type="button">
-          Scan Project
-        </Button>
-      </nav>
-    </header>
+        <Link 
+          href="/results"
+          className="bg-signal text-paper px-6 py-2 font-technical-sm text-xs uppercase font-bold hard-shadow-ink hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all text-center inline-block"
+        >
+          Deploy Scan
+        </Link>
+      </div>
+    </nav>
   );
 }
