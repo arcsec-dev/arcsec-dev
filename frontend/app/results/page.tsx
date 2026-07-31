@@ -1,22 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import {
-  downloadSecureProject,
-  repairProject,
-} from "@/lib/api";
+import { downloadSecureProject } from "@/lib/api";
 import type { ScanReport } from "@/types/report";
-
-import { ExecutiveSummary } from "@/components/report/executive-summary";
-import { Findings } from "@/components/report/findings";
-import { FindingsSummary } from "@/components/report/findings-summary";
-import { ProjectSummary } from "@/components/report/project-summary";
-import { Recommendations } from "@/components/report/recommendations";
-import { RepairPlan } from "@/components/report/repair-plan";
-import { ReportLayout } from "@/components/report/report-layout";
-import { ReportMetadata } from "@/components/report/report-metadata";
-import { RiskBreakdown } from "@/components/report/risk-breakdown";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle, Download, FileText, RefreshCw } from "lucide-react";
 
 type RepairResponse = {
   success: boolean;
@@ -33,154 +21,181 @@ type RepairResponse = {
 
 export default function ResultsPage() {
   const [report, setReport] = useState<ScanReport | null>(null);
+  const [repairResult, setRepairResult] = useState<RepairResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [repairing, setRepairing] = useState(false);
-  const [repairComplete, setRepairComplete] = useState(false);
-  const [repairResult, setRepairResult] =
-    useState<RepairResponse | null>(null);
+  const [downloadTriggered, setDownloadTriggered] = useState(false);
 
   useEffect(() => {
     try {
-      const data = sessionStorage.getItem("scanResult");
+      const scanData = sessionStorage.getItem("scanResult");
+      const repairData = sessionStorage.getItem("repairResult");
 
-      if (data) {
-        setReport(JSON.parse(data));
-      }
-    } catch {
-      sessionStorage.removeItem("scanResult");
+      if (scanData) setReport(JSON.parse(scanData));
+      if (repairData) setRepairResult(JSON.parse(repairData));
+    } catch (e) {
+      console.error("Failed to load results from sessionStorage:", e);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  async function handleRepair() {
-    if (!report) return;
-
-    setRepairing(true);
-
-    try {
-      const result = await repairProject(report.uploadId);
-
-      setRepairResult(result);
-
-      setRepairComplete(true);
-
-      downloadSecureProject(report.uploadId);
-    } catch (error) {
-      console.error(error);
-      alert("Repair failed.");
-    } finally {
-      setRepairing(false);
+  // Auto trigger download on mount if not already done
+  useEffect(() => {
+    if (report && repairResult && !downloadTriggered) {
+      setDownloadTriggered(true);
+      try {
+        downloadSecureProject(report.uploadId);
+      } catch (e) {
+        console.error("Failed to auto-download zip:", e);
+      }
     }
-  }
+  }, [report, repairResult, downloadTriggered]);
+
+  const handleManualDownload = () => {
+    if (report) {
+      downloadSecureProject(report.uploadId);
+    }
+  };
+
+  const handleReset = () => {
+    sessionStorage.removeItem("scanResult");
+    sessionStorage.removeItem("repairResult");
+    window.location.href = "/dashboard";
+  };
 
   if (loading) {
     return (
-      <main className="mx-auto min-h-screen max-w-7xl p-10">
-        <p className="text-muted-foreground">
-          Loading report...
-        </p>
-      </main>
+      <div className="flex items-center justify-center p-10 font-mono text-on-surface-variant">
+        <span>Loading remediation results...</span>
+      </div>
     );
   }
 
-  if (!report) {
+  if (!repairResult || !report) {
     return (
-      <main className="mx-auto min-h-screen max-w-7xl p-10">
-        <h1 className="text-4xl font-bold">
-          No scan results found.
+      <div className="text-center p-16 border border-line-mute bg-surface-container">
+        <h1 className="font-headline-md text-3xl uppercase text-signal mb-4">
+          No Patches Found
         </h1>
-      </main>
+        <p className="font-body-md text-sm text-on-surface-variant max-w-md mx-auto mb-8 leading-relaxed">
+          You haven&apos;t run the AI remediation engine for your project yet.
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Link
+            href="/dashboard"
+            className="bg-primary text-on-primary-foreground font-technical-sm text-xs font-semibold px-6 py-3 border uppercase tracking-wider font-mono"
+          >
+            Dashboard
+          </Link>
+          {report && (
+            <Link
+              href="/report"
+              className="border border-line-mute text-on-surface hover:bg-surface-bright px-6 py-3 font-technical-sm text-xs uppercase tracking-wider font-mono"
+            >
+              Back to Report
+            </Link>
+          )}
+        </div>
+      </div>
     );
   }
 
   return (
-    <ReportLayout>
-      <ExecutiveSummary
-        securityScore={report.securityScore}
-        overallRisk={report.overallRisk}
-        statistics={report.statistics}
-      />
-
-      <ReportMetadata
-        uploadId={report.uploadId}
-        metadata={report.metadata}
-      />
-
-      <ProjectSummary project={report.project} />
-
-      <RiskBreakdown statistics={report.statistics} />
-
-      <FindingsSummary findings={report.findings} />
-
-      <Recommendations statistics={report.statistics} />
-
-      <RepairPlan findings={report.findings} />
-
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold">
-              Automatic Repair
-            </h2>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Repair supported vulnerabilities and download the
-              secured project.
-            </p>
-          </div>
-
-          <button
-            onClick={handleRepair}
-            disabled={repairing || repairComplete}
-            className="rounded-lg bg-black px-6 py-3 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black"
-          >
-            {repairing
-              ? "Repairing..."
-              : repairComplete
-                ? "Repair Complete"
-                : "Repair Project"}
-          </button>
+    <div className="relative z-10 w-full flex flex-col items-center justify-center min-h-full py-6">
+      
+      {/* Success Banner Card */}
+      <div className="w-full max-w-3xl bg-surface-container border border-line-mute p-8 shadow-[8px_8px_0px_0px_rgba(14,14,14,1)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <CheckCircle className="size-[200px] text-green-500" />
         </div>
 
-        {repairResult && (
-          <div className="mt-6 rounded-lg border border-green-600 bg-green-500/10 p-5">
-            <h3 className="text-lg font-semibold text-green-500">
-              Repair Successful
-            </h3>
-
-            <p className="mt-2">
-              Applied Fixes:{" "}
-              <strong>{repairResult.total}</strong>
+        <div className="flex flex-col gap-8">
+          {/* Header */}
+          <div className="space-y-3">
+            <span className="font-technical-xs text-xs text-green-500 bg-green-500/10 px-3 py-1 inline-block border border-green-500/20 font-semibold tracking-wider">
+              REPAIR COMPLETED
+            </span>
+            <h2 className="font-headline-md text-4xl text-on-surface leading-none tracking-tight uppercase">
+              Project Successfully Patched
+            </h2>
+            <p className="font-body-md text-sm text-on-surface-variant leading-relaxed">
+              Applied **{repairResult.total} fixes** to your code assets. The secured zip project has been prepared and download has started automatically.
             </p>
+          </div>
 
-            <p className="mb-4 text-sm text-muted-foreground">
-              Your repaired project has been prepared and the
-              download has started automatically.
-            </p>
-
-            <div className="space-y-3">
+          {/* Diffs & Applied Fixes list */}
+          <div className="space-y-4">
+            <div className="font-technical-xs text-xs text-on-surface-variant uppercase tracking-wider font-semibold border-b border-line-mute pb-2">
+              Patched Code Targets
+            </div>
+            
+            <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
               {repairResult.applied_fixes.map((fix, index) => (
-                <div
+                <div 
                   key={index}
-                  className="rounded-lg border p-3"
+                  className="bg-ink/50 border border-line-mute p-4 flex flex-col gap-1 rounded"
                 >
-                  <div className="font-medium">
-                    {fix.title}
+                  <div className="flex justify-between items-center">
+                    <span className="font-technical-sm text-sm text-on-surface font-semibold font-mono">
+                      {fix.title}
+                    </span>
+                    <span className="text-[10px] text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 font-mono uppercase font-bold">
+                      Fixed
+                    </span>
                   </div>
-
-                  <div className="text-sm text-muted-foreground">
+                  <span className="font-technical-xs text-[11px] text-on-surface-variant font-mono">
                     {fix.file}
-                  </div>
+                  </span>
                 </div>
               ))}
+              
+              {repairResult.applied_fixes.length === 0 && (
+                <div className="text-center py-6 text-sm text-on-surface-variant font-mono">
+                  No automatic modifications were applied.
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
 
-      <Findings findings={report.findings} />
-    </ReportLayout>
+          {/* Manual reviews warning, if any */}
+          {repairResult.manual_review && repairResult.manual_review.length > 0 && (
+            <div className="border border-line-mute bg-surface-container-high/40 p-4 space-y-2">
+              <span className="font-technical-xs text-xs text-xanthous font-bold uppercase tracking-wider">
+                Manual Review Recommended
+              </span>
+              <p className="font-body-md text-xs text-on-surface-variant leading-relaxed">
+                The scanner flagged vulnerabilities in files that require human review or key rotating (e.g. hardcoded credentials).
+              </p>
+              <div className="space-y-1 pl-2">
+                {repairResult.manual_review.map((review, idx) => (
+                  <div key={idx} className="font-technical-xs text-[11px] text-on-surface-variant font-mono">
+                    • {review.file} : <span className="underline">{review.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 border-t border-line-mute pt-6">
+            <button
+              onClick={handleManualDownload}
+              className="bg-signal text-paper px-8 py-3.5 font-technical-sm text-sm uppercase font-bold hard-shadow-ink hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Download className="size-4" />
+              Download ZIP Again
+            </button>
+            
+            <button
+              onClick={handleReset}
+              className="border border-line-mute text-on-surface hover:bg-surface-bright px-6 py-3.5 font-technical-sm text-sm uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <RefreshCw className="size-4" />
+              New Scan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -6,9 +6,9 @@ export function Navbar() {
       <div className="max-w-[1240px] mx-auto px-6 md:px-[40px] flex items-center justify-between h-20">
         <Link 
           href="/" 
-          className="font-display-lg text-4xl text-on-surface tracking-tighter hover:opacity-90 transition-opacity"
+          className="font-display-lg text-4xl text-on-surface tracking-tighter hover:opacity-90 transition-opacity uppercase"
         >
-          ARCSEC.
+          ARCSEC<span className="text-red-600">.</span>
         </Link>
         <div className="hidden md:flex gap-6 items-center">
           <a 

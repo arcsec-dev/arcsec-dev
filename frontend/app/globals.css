@@ -3,26 +3,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #131313;
-  --foreground: #e5e2e1;
-  --card: #201f1f;
-  --card-foreground: #e5e2e1;
-  --primary: #ffb3b1;
-  --primary-foreground: #680011;
-  --secondary: #fdbb3d;
-  --secondary-foreground: #281900;
-  --muted: #1c1b1b;
-  --muted-foreground: #e0bfbd;
-  --border: #584140;
+  --background: #0a0908;
+  --foreground: #e8e1da;
+  --card: #15130f;
+  --card-foreground: #e8e1da;
+  --primary: #780116;
+  --primary-foreground: #ffffff;
+  --secondary: #f7b538;
+  --secondary-foreground: #0a0908;
+  --muted: #1c1a16;
+  --muted-foreground: #e8e1da;
+  --border: #2c2a25;
   --ring: #780116;
   
   /* Additional design system variables */
-  --surface-container-highest: #353534;
-  --line-mute: #584140;
+  --surface-container-highest: #1c1a16;
+  --line-mute: #2c2a25;
   --on-tertiary-fixed-variant: #194972;
-  --surface: #131313;
+  --surface: #15130f;
   --on-primary-fixed-variant: #8c1522;
-  --ink: #0e0e0e;
+  --ink: #0a0908;
   --inverse-on-surface: #313030;
   --on-primary-fixed: #410007;
   --on-error-container: #ffdad6;
@@ -35,10 +35,10 @@
   --paper: #e5e2e1;
   --on-primary-container: #ff797a;
   --secondary-fixed: #ffdeac;
-  --surface-container: #201f1f;
-  --on-surface: #e5e2e1;
+  --surface-container: #15130f;
+  --on-surface: #e8e1da;
   --primary-container: #780116;
-  --surface-container-lowest: #0e0e0e;
+  --surface-container-lowest: #0a0908;
   --inverse-surface: #e5e2e1;
   --secondary-fixed-dim: #fdbb3d;
   --signal: #780116;
@@ -52,21 +52,22 @@
   --on-secondary: #432c00;
   --on-surface-variant: #e0bfbd;
   --primary-fixed-dim: #ffb3b1;
-  --surface-container-low: #1c1b1b;
-  --surface-variant: #353534;
+  --surface-container-low: #0a0908;
+  --surface-variant: #1c1a16;
   --error-container: #93000a;
   --tertiary-fixed: #d0e4ff;
   --on-tertiary-fixed: #001d34;
   --tertiary-container: #003b63;
   --gold: #f7b538;
-  --surface-bright: #393939;
-  --surface-container-high: #2a2a2a;
+  --surface-bright: #1c1a16;
+  --surface-container-high: #1c1a16;
   --on-secondary-fixed: #281900;
   --on-error: #690005;
   --inverse-primary: #ae2f37;
   --surface-dim: #131313;
   --secondary-container: #c68b00;
   --xanthous: #f7b538;
+  --accent: #f7b538;
 }
 
 @theme inline {
@@ -103,6 +104,7 @@
   --color-surface-bright: var(--surface-bright);
   --color-surface-container-high: var(--surface-container-high);
   --color-xanthous: var(--xanthous);
+  --color-accent: var(--accent);
   
   --font-bebas: "Bebas Neue", sans-serif;
   --font-inter: "Inter", sans-serif;
@@ -146,10 +148,23 @@ html {
 }
 
 .dotted-canvas {
-  background-image: radial-gradient(circle, #584140 1.5px, transparent 1.5px);
-  background-size: 28px 28px;
-  background-color: #131313;
-  opacity: 0.15;
+  background-image: radial-gradient(circle, #f7b538 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.05;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  line-height: 1;
+}
+
+.scan-glow {
+  box-shadow: 0 0 20px rgba(120, 1, 22, 0.2);
+}
+
+.xanthous-glow {
+  text-shadow: 0 0 10px rgba(247, 181, 56, 0.4);
 }
 
 .btn-hover-active:hover {

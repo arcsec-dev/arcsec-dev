@@ -3,8 +3,8 @@ export function Footer() {
     <footer className="bg-background border-t border-line-mute pt-[110px] pb-12 w-full">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-6 md:px-[40px] max-w-[1240px] mx-auto py-16">
         <div className="flex flex-col gap-6">
-          <span className="font-display-lg text-4xl text-signal tracking-wider">
-            ARCSEC<span className="text-signal">.</span>
+          <span className="font-display-lg text-4xl text-on-surface tracking-tighter uppercase select-none">
+            ARCSEC<span className="text-red-600">.</span>
           </span>
           <p className="font-technical-xs text-[11px] uppercase tracking-wider text-on-surface-variant">
             SECURE BY DEFAULT. FORGED IN CODE.
@@ -52,7 +52,7 @@ export function Footer() {
         
         <div>
           <h5 className="font-technical-sm text-sm text-on-surface mb-6 font-bold uppercase tracking-widest">
-            Terminal
+            Workspace
           </h5>
           <ul className="space-y-4 font-body-md text-sm text-on-surface-variant">
             <li>
@@ -62,7 +62,7 @@ export function Footer() {
             </li>
             <li>
               <a className="hover:text-on-surface transition-colors" href="/results">
-                Terminal Access
+                Dashboard
               </a>
             </li>
             <li>

@@ -7,13 +7,8 @@ export default function SignUpPage() {
       {/* Top Bar */}
       <header className="w-full h-16 flex items-center px-6 md:px-[40px] max-w-[1240px] mx-auto justify-between z-50">
         <Link href="/" className="font-display-lg text-4xl tracking-tighter text-on-background uppercase">
-          ARCSEC<span className="text-signal">.</span>
+          ARCSEC<span className="text-red-600">.</span>
         </Link>
-        <div className="hidden md:block">
-          <span className="font-technical-xs text-xs text-line-mute uppercase tracking-widest font-mono">
-            System Status: <span className="text-secondary font-bold">Optimal</span>
-          </span>
-        </div>
       </header>
 
       {/* Main Content Canvas */}
@@ -64,11 +59,11 @@ export default function SignUpPage() {
       <footer className="w-full border-t border-line-mute pt-8 pb-12 mt-auto">
         <div className="max-w-[1240px] mx-auto px-6 md:px-[40px] flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="font-technical-xs text-xs text-line-mute uppercase tracking-wider font-semibold">
-            © 2026 ARCSEC SYSTEMS. SECURE BY DEFAULT.
+            © 2026 ARCSEC. SECURE BY DEFAULT.
           </div>
           <div className="flex gap-8">
             <a className="font-technical-xs text-xs text-on-surface-variant hover:text-on-surface transition-colors uppercase" href="#">
-              Terminal Access
+              Workspace
             </a>
             <a className="font-technical-xs text-xs text-on-surface-variant hover:text-on-surface transition-colors uppercase" href="#">
               CWE Compliance

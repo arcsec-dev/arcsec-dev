@@ -1,35 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { uploadProject } from "@/lib/api";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export function Hero() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isScanning, setIsScanning] = useState(false);
   const [terminalStep, setTerminalStep] = useState(0);
-
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsScanning(true);
-
-      const result = await uploadProject(file);
-
-      sessionStorage.setItem(
-        "scanResult",
-        JSON.stringify(result)
-      );
-
-      window.location.href = "/results";
-    } catch (error) {
-      console.error(error);
-      alert("Upload failed. Make sure the backend server is running on port 8000.");
-    } finally {
-      setIsScanning(false);
-    }
-  }
 
   // Animate terminal lines on mount
   useEffect(() => {
@@ -45,14 +20,7 @@ export function Hero() {
   return (
     <section className="max-w-[1240px] mx-auto px-6 md:px-[40px] pt-24 pb-[110px] flex flex-col items-center text-center">
       <div className="reveal active">
-        {/* Technical tag */}
-        <div className="inline-block px-3 py-1 bg-signal/10 border border-signal mb-8">
-          <span className="font-technical-xs text-xs text-signal tracking-widest font-semibold uppercase">
-            SECURITY V2.4.0-STABLE
-          </span>
-        </div>
-        
-        <h1 className="font-display-xl text-5xl md:text-[76px] max-w-4xl mx-auto mb-6 uppercase tracking-tight leading-[0.95] font-normal">
+        <h1 className="font-display-xl text-5xl md:text-[76px] max-w-4xl mx-auto mb-6 uppercase tracking-tight leading-[0.95] font-normal pt-10">
           AI-BUILDERS SHIP <span className="text-xanthous">VULNERABILITIES</span>.<br />
           YOU SHIP THE FIXES.
         </h1>
@@ -60,28 +28,18 @@ export function Hero() {
         <p className="font-body-lg text-lg md:text-[18px] text-on-surface-variant max-w-2xl mx-auto mb-10 leading-relaxed">
           Automated security remediation for the generative era. Scan exports from Lovable, Bolt, and v0. Receive production-ready code diffs that patch SQLi, hardcoded secrets, and XSS instantly.
         </p>
-        
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".zip"
-          hidden
-          onChange={handleFileChange}
-        />
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20 px-4">
-          <button
-            type="button"
-            disabled={isScanning}
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-signal text-paper px-8 py-4 font-technical-sm text-base uppercase font-bold hard-shadow-ink hover:-translate-x-1 hover:-translate-y-1 active:translate-x-0.5 active:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          <Link
+            href="/dashboard"
+            className="bg-signal text-paper px-8 py-4 font-technical-sm text-base uppercase font-bold hard-shadow-ink hover:-translate-x-1 hover:-translate-y-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-center inline-block cursor-pointer"
           >
-            {isScanning ? "Scanning..." : "Scan your first project free"}
-          </button>
+            Start Free Scan
+          </Link>
           
           <a
             href="#how-it-works"
-            className="border-2 border-line-mute text-on-surface px-8 py-4 font-technical-sm text-base uppercase font-bold hover:bg-surface-bright transition-all inline-block"
+            className="border-2 border-line-mute text-on-surface px-8 py-4 font-technical-sm text-base uppercase font-bold hover:bg-surface-bright transition-all inline-block text-center"
           >
             View Flow
           </a>
@@ -97,7 +55,7 @@ export function Hero() {
             <div className="w-3 h-3 rounded-full bg-line-mute"></div>
           </div>
           <div className="font-technical-xs text-xs text-on-surface-variant font-semibold">
-            terminal — arcsec-remediate.sh
+            arcsec-remediate.sh
           </div>
           <div className="w-12"></div>
         </div>
