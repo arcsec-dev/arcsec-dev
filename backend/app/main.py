@@ -5,7 +5,8 @@ from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse  
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 from app.models.finding import Finding
 from app.models.report import ScanReport
@@ -14,8 +15,8 @@ from app.services.categorizer import categorize_finding
 from app.services.dependency_scanner import scan_dependencies
 from app.services.recommendation_engine import enrich_finding
 from app.services.report_builder import build_scan_report
-from app.services.scanner import run_security_scan
 from app.services.repair_engine import RepairEngine
+from app.services.scanner import run_security_scan
 
 app = FastAPI(
     title="VibeSec API",
@@ -45,15 +46,17 @@ TEMP_DIR.mkdir(parents=True, exist_ok=True)
 # --------------------------------------------------
 
 ACTIVE_PROJECTS: dict[str, Path] = {}
+ACTIVE_FINDINGS: dict[str, list[Finding]] = {}
+ACTIVE_REPAIRS: dict[str, Path] = {}
+
 
 class HealthResponse(TypedDict):
     status: str
 
-from pydantic import BaseModel
-
 
 class RepairRequest(BaseModel):
     uploadId: str
+
 
 @app.get("/health")
 def health() -> HealthResponse:
@@ -120,6 +123,7 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
             )
             for finding in raw_findings
         ]
+
     except RuntimeError as e:
         findings = [
             Finding(
@@ -147,11 +151,15 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
         findings=findings,
     )
 
+    ACTIVE_FINDINGS[upload_id] = findings
+
     return report
+
 
 @app.post("/repair")
 async def repair(request: RepairRequest):
     project_path = ACTIVE_PROJECTS.get(request.uploadId)
+    findings = ACTIVE_FINDINGS.get(request.uploadId)
 
     if project_path is None:
         raise HTTPException(
@@ -159,17 +167,35 @@ async def repair(request: RepairRequest):
             detail="Project not found.",
         )
 
+    if findings is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Findings not found.",
+        )
+
     engine = RepairEngine()
 
-    result = engine.repair_project(project_path)
+    result = engine.repair_project(
+        project_path=project_path,
+        findings=[finding.model_dump() for finding in findings],
+    )
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=500,
+            detail=result.get("error", "Repair failed."),
+        )
+
+    ACTIVE_REPAIRS[request.uploadId] = Path(result["zip_path"])
 
     return result
 
+
 @app.get("/download/{upload_id}")
 async def download(upload_id: str):
-    zip_path = TEMP_DIR / f"{upload_id}_secured.zip"
+    zip_path = ACTIVE_REPAIRS.get(upload_id)
 
-    if not zip_path.exists():
+    if zip_path is None or not zip_path.exists():
         raise HTTPException(
             status_code=404,
             detail="Secure project not found.",
