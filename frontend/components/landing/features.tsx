@@ -21,7 +21,7 @@ export function Features() {
         <div className="mb-16">
           <h2 className="font-display-lg text-4xl md:text-5xl mb-4 tracking-tight">ENGINEERING PRECISION</h2>
           <p className="font-body-md text-base text-on-surface-variant max-w-xl">
-            Don't just find bugs. Solve them with technical structural integrity.
+            Don&apos;t just find bugs. Solve them with technical structural integrity.
           </p>
         </div>
         
@@ -36,7 +36,7 @@ export function Features() {
           <div className="hidden md:block bg-surface-container-high p-4 font-technical-xs text-[11px] uppercase text-signal border-b border-line-mute tracking-wider font-bold">
             ArcSec Remediation
           </div>
-
+ 
           {/* Row 1 */}
           <div className="p-6 md:p-8 flex flex-col gap-2 justify-center">
             <span className="md:hidden font-technical-xs text-[11px] text-on-surface-variant uppercase tracking-wider mb-2 font-semibold">
@@ -51,7 +51,7 @@ export function Features() {
               Root Cause
             </span>
             <p className="font-body-md italic text-sm text-on-surface-variant">
-              "LLMs often prefer string interpolation for readability over parameterized queries."
+              &quot;LLMs often prefer string interpolation for readability over parameterized queries.&quot;
             </p>
           </div>
           <div className="p-6 md:p-8 flex flex-col gap-4 border-l-2 border-signal justify-center">
@@ -64,7 +64,7 @@ export function Features() {
               </span>
             </div>
           </div>
-
+ 
           {/* Row 2 */}
           <div className="p-6 md:p-8 flex flex-col gap-2 justify-center">
             <span className="md:hidden font-technical-xs text-[11px] text-on-surface-variant uppercase tracking-wider mb-2 font-semibold">
@@ -79,7 +79,7 @@ export function Features() {
               Root Cause
             </span>
             <p className="font-body-md italic text-sm text-on-surface-variant">
-              "Hardcoded keys in generated React components for 'rapid prototyping' speed."
+              &quot;Hardcoded keys in generated React components for &apos;rapid prototyping&apos; speed.&quot;
             </p>
           </div>
           <div className="p-6 md:p-8 flex flex-col gap-4 border-l-2 border-signal justify-center">
@@ -92,7 +92,7 @@ export function Features() {
               </span>
             </div>
           </div>
-
+ 
           {/* Row 3 */}
           <div className="p-6 md:p-8 flex flex-col gap-2 justify-center">
             <span className="md:hidden font-technical-xs text-[11px] text-on-surface-variant uppercase tracking-wider mb-2 font-semibold">
@@ -107,7 +107,7 @@ export function Features() {
               Root Cause
             </span>
             <p className="font-body-md italic text-sm text-on-surface-variant">
-              "Incomplete middleware logic in route exports leads to unprotected API endpoints."
+              &quot;Incomplete middleware logic in route exports leads to unprotected API endpoints.&quot;
             </p>
           </div>
           <div className="p-6 md:p-8 flex flex-col gap-4 border-l-2 border-signal justify-center">
@@ -122,7 +122,7 @@ export function Features() {
           </div>
         </div>
       </section>
-
+ 
       {/* Detailed Feature Section with Bento Feel */}
       <section className="max-w-[1240px] mx-auto px-6 md:px-[40px] mb-[110px]">
         <div className="grid md:grid-cols-12 gap-6">
@@ -135,7 +135,7 @@ export function Features() {
                 REAL-TIME PATCHING FOR AI OUTPUTS
               </h3>
               <p className="font-body-lg text-base text-on-surface-variant max-w-xl leading-relaxed">
-                ArcSec doesn't just bark. It bites back at vulnerabilities. Our engine understands the context of AI-generated code and applies semantic patches that preserve your app's logic while hardening its shell.
+                ArcSec doesn&apos;t just bark. It bites back at vulnerabilities. Our engine understands the context of AI-generated code and applies semantic patches that preserve your app&apos;s logic while hardening its shell.
               </p>
             </div>
             <div className="mt-10 flex gap-4 overflow-x-auto pb-4">

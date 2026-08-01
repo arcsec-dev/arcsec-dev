@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
@@ -12,21 +12,7 @@ export function DashboardLayout({
 }) {
   const { user } = useUser();
   const pathname = usePathname();
-  const [projectName, setProjectName] = useState("CORE-ALPHA_TX4");
 
-  useEffect(() => {
-    try {
-      const data = sessionStorage.getItem("scanResult");
-      if (data) {
-        const report = JSON.parse(data);
-        if (report?.project?.name) {
-          setProjectName(report.project.name.toUpperCase().replace(/\s+/g, "_"));
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load project name from sessionStorage:", e);
-    }
-  }, [pathname]);
 
   return (
     <div className="bg-background text-on-surface font-body overflow-hidden h-screen flex w-full">

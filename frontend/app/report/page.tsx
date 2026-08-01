@@ -17,8 +17,6 @@ import { RiskBreakdown } from "@/components/report/risk-breakdown";
 const FIX_STEPS = [
   "Generating semantic code patches...",
   "Applying security fixes to code targets...",
-  "Validating code changes against AST parsers...",
-  "Running project build sanity checks...",
   "Bundling repaired project zip archive..."
 ];
 
@@ -30,17 +28,20 @@ export default function ReportPage() {
   const [fixError, setFixError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const data = sessionStorage.getItem("scanResult");
-      if (data) {
-        setReport(JSON.parse(data));
+    const timer = setTimeout(() => {
+      try {
+        const data = sessionStorage.getItem("scanResult");
+        if (data) {
+          setReport(JSON.parse(data));
+        }
+      } catch (e) {
+        console.error(e);
+        sessionStorage.removeItem("scanResult");
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error(e);
-      sessionStorage.removeItem("scanResult");
-    } finally {
-      setLoading(false);
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleFixAll = async () => {
@@ -187,10 +188,12 @@ export default function ReportPage() {
             <div className="max-w-5xl mx-auto w-full bg-surface-container/90 backdrop-blur-md border border-line-mute px-6 py-4 flex flex-col sm:flex-row items-center justify-between shadow-[8px_8px_0px_0px_rgba(14,14,14,1)] gap-4 pointer-events-auto">
               <div>
                 <h3 className="font-technical-sm text-sm font-bold text-on-surface uppercase tracking-wider">
-                  Vulnerabilities Detected
+                  {report.findings.length === 0 ? "Codebase Secure" : "Vulnerabilities Detected"}
                 </h3>
                 <p className="font-body-md text-xs text-on-surface-variant opacity-80 mt-1">
-                  Security scan identified {report.findings.length} issues. Click to resolve them automatically.
+                  {report.findings.length === 0 
+                    ? "No security vulnerabilities were identified in the audit."
+                    : `Security scan identified ${report.findings.length} issues. Click to resolve them automatically.`}
                 </p>
               </div>
 
@@ -198,7 +201,7 @@ export default function ReportPage() {
                 onClick={handleFixAll}
                 className="bg-signal text-paper px-8 py-3 font-technical-sm text-sm uppercase font-bold hard-shadow-ink hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all text-center inline-block cursor-pointer font-mono whitespace-nowrap"
               >
-                Fix All Vulnerabilities
+                {report.findings.length === 0 ? "Download ZIP" : "Fix All Vulnerabilities"}
               </button>
             </div>
           </div>

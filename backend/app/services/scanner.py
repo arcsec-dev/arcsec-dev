@@ -6,7 +6,7 @@ from pathlib import Path
 from app.models.finding import Finding
 from app.services.snippet import extract_snippet
 
-# Convert Semgrep severities into VibeSec severities
+# Convert Semgrep severities into ArcSec severities
 SEVERITY_MAP = {
     "ERROR": "CRITICAL",
     "WARNING": "MEDIUM",
@@ -19,6 +19,15 @@ def run_security_scan(project_path: Path) -> list[Finding]:
     Run a Semgrep security scan against the extracted project.
     Returns a list of Finding objects.
     """
+
+    # Locate the semgrep-rules folder
+    rules_path = Path(__file__).resolve().parents[2] / "semgrep-rules"
+
+    # Verify the rules folder exists
+    if not rules_path.exists():
+        raise RuntimeError(
+            f"Semgrep rules folder not found: {rules_path}"
+        )
 
     # Locate semgrep executable in the active virtual environment if possible
     semgrep_cmd = "semgrep"
@@ -35,7 +44,8 @@ def run_security_scan(project_path: Path) -> list[Finding]:
         result = subprocess.run(
             [
                 semgrep_cmd,
-                "--config=auto",
+                "--config",
+                str(rules_path),
                 "--json",
                 "--no-git-ignore",
                 str(project_path),
@@ -54,7 +64,9 @@ def run_security_scan(project_path: Path) -> list[Finding]:
     # 0 = No findings
     # 1 = Findings detected
     if result.returncode not in (0, 1):
-        raise RuntimeError(result.stderr)
+        raise RuntimeError(
+            result.stderr if result.stderr else result.stdout
+        )
 
     try:
         data = json.loads(result.stdout)
@@ -81,9 +93,9 @@ def run_security_scan(project_path: Path) -> list[Finding]:
 
         original_path = Path(issue["path"])
 
-        # Convert absolute or extracted paths into project-relative paths
         try:
             relative_path = original_path.relative_to(project_path)
+
         except ValueError:
             try:
                 parts = original_path.parts
@@ -92,7 +104,8 @@ def run_security_scan(project_path: Path) -> list[Finding]:
                     index = parts.index(project_path.name)
                     relative_path = Path(*parts[index + 1 :])
                 else:
-                    relative_path = original_path.name
+                    relative_path = Path(original_path.name)
+
             except Exception:
                 relative_path = Path(original_path.name)
 
@@ -108,7 +121,7 @@ def run_security_scan(project_path: Path) -> list[Finding]:
             Finding(
                 title=issue["check_id"],
                 severity=severity,
-                file=str(relative_path).replace("\\", "/"),
+                file=str(relative_path),
                 line=line,
                 message=issue["extra"]["message"],
                 source="Semgrep",

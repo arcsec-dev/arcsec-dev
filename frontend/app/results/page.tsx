@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { downloadSecureProject } from "@/lib/api";
 import type { ScanReport } from "@/types/report";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Download, FileText, RefreshCw } from "lucide-react";
+import { CheckCircle, AlertTriangle, Download, RefreshCw } from "lucide-react";
 
 type RepairResponse = {
   success: boolean;
   total: number;
   applied_fixes: {
-    title: string;
     file: string;
+    issues: number;
   }[];
   manual_review: {
-    title: string;
     file: string;
+    title: string;
   }[];
 };
 
@@ -26,28 +26,34 @@ export default function ResultsPage() {
   const [downloadTriggered, setDownloadTriggered] = useState(false);
 
   useEffect(() => {
-    try {
-      const scanData = sessionStorage.getItem("scanResult");
-      const repairData = sessionStorage.getItem("repairResult");
+    const timer = setTimeout(() => {
+      try {
+        const scanData = sessionStorage.getItem("scanResult");
+        const repairData = sessionStorage.getItem("repairResult");
 
-      if (scanData) setReport(JSON.parse(scanData));
-      if (repairData) setRepairResult(JSON.parse(repairData));
-    } catch (e) {
-      console.error("Failed to load results from sessionStorage:", e);
-    } finally {
-      setLoading(false);
-    }
+        if (scanData) setReport(JSON.parse(scanData));
+        if (repairData) setRepairResult(JSON.parse(repairData));
+      } catch (e) {
+        console.error("Failed to load results from sessionStorage:", e);
+      } finally {
+        setLoading(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Auto trigger download on mount if not already done
   useEffect(() => {
     if (report && repairResult && !downloadTriggered) {
-      setDownloadTriggered(true);
-      try {
-        downloadSecureProject(report.uploadId);
-      } catch (e) {
-        console.error("Failed to auto-download zip:", e);
-      }
+      const timer = setTimeout(() => {
+        setDownloadTriggered(true);
+        try {
+          downloadSecureProject(report.uploadId);
+        } catch (e) {
+          console.error("Failed to auto-download zip:", e);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [report, repairResult, downloadTriggered]);
 
@@ -100,27 +106,59 @@ export default function ResultsPage() {
     );
   }
 
+  const hasAppliedFixes = repairResult.applied_fixes.length > 0;
+  const originalHadFindings = report.findings.length > 0;
+  const isZeroModifications = !hasAppliedFixes;
+
   return (
     <div className="relative z-10 w-full flex flex-col items-center justify-center min-h-full py-6">
       
-      {/* Success Banner Card */}
+      {/* Success/Status Banner Card */}
       <div className="w-full max-w-3xl bg-surface-container border border-line-mute p-8 shadow-[8px_8px_0px_0px_rgba(14,14,14,1)] relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-          <CheckCircle className="size-[200px] text-green-500" />
+          {isZeroModifications ? (
+            <AlertTriangle className="size-[200px] text-amber-500" />
+          ) : (
+            <CheckCircle className="size-[200px] text-green-500" />
+          )}
         </div>
 
         <div className="flex flex-col gap-8">
           {/* Header */}
           <div className="space-y-3">
-            <span className="font-technical-xs text-xs text-green-500 bg-green-500/10 px-3 py-1 inline-block border border-green-500/20 font-semibold tracking-wider">
-              REPAIR COMPLETED
-            </span>
-            <h2 className="font-headline-md text-4xl text-on-surface leading-none tracking-tight uppercase">
-              Project Successfully Patched
-            </h2>
-            <p className="font-body-md text-sm text-on-surface-variant leading-relaxed">
-              Applied **{repairResult.total} fixes** to your code assets. The secured zip project has been prepared and download has started automatically.
-            </p>
+            {isZeroModifications ? (
+              <>
+                <span className="font-technical-xs text-xs text-amber-500 bg-amber-500/10 px-3 py-1 inline-block border border-amber-500/20 font-semibold tracking-wider uppercase font-mono">
+                  ZIP Prepared (No Changes)
+                </span>
+                <h2 className="font-headline-md text-4xl text-on-surface leading-none tracking-tight uppercase">
+                  Project Packaged without Modifications
+                </h2>
+                <p className="font-body-md text-sm text-on-surface-variant leading-relaxed">
+                  {originalHadFindings ? (
+                    <>
+                      The scanner identified potential vulnerabilities, but the remediation system could not apply any automatic fixes to the codebase. An unchanged copy of your project has been packaged as a ZIP and downloaded.
+                    </>
+                  ) : (
+                    <>
+                      No vulnerabilities were found in your project. We have packaged a clean copy of your project as a ZIP and downloaded it automatically.
+                    </>
+                  )}
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="font-technical-xs text-xs text-green-500 bg-green-500/10 px-3 py-1 inline-block border border-green-500/20 font-semibold tracking-wider uppercase font-mono">
+                  Remediation Applied
+                </span>
+                <h2 className="font-headline-md text-4xl text-on-surface leading-none tracking-tight uppercase">
+                  Code Modifications Applied
+                </h2>
+                <p className="font-body-md text-sm text-on-surface-variant leading-relaxed">
+                  The AI remediation engine applied modifications to **{repairResult.applied_fixes.length} file(s)**. The modified code has been packaged and downloaded automatically.
+                </p>
+              </>
+            )}
           </div>
 
           {/* Diffs & Applied Fixes list */}
@@ -136,16 +174,13 @@ export default function ResultsPage() {
                   className="bg-ink/50 border border-line-mute p-4 flex flex-col gap-1 rounded"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-technical-sm text-sm text-on-surface font-semibold font-mono">
-                      {fix.title}
+                    <span className="font-technical-sm text-sm text-on-surface font-semibold font-mono break-all">
+                      {fix.file}
                     </span>
-                    <span className="text-[10px] text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 font-mono uppercase font-bold">
-                      Fixed
+                    <span className="text-[10px] text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 font-mono uppercase font-bold whitespace-nowrap">
+                      {fix.issues} issue{fix.issues !== 1 ? 's' : ''} patched
                     </span>
                   </div>
-                  <span className="font-technical-xs text-[11px] text-on-surface-variant font-mono">
-                    {fix.file}
-                  </span>
                 </div>
               ))}
               

@@ -46,29 +46,45 @@ VULNERABLE_PACKAGES = {
 
 def scan_dependencies(project_path: Path) -> list[Finding]:
     """
-    Scan requirements.txt for vulnerable package versions.
-    Returns a list of Finding objects.
+    Scan all requirements.txt files inside the project and detect
+    vulnerable dependency versions.
+
+    Returns:
+        list[Finding]
     """
 
     findings: list[Finding] = []
 
     for requirements in project_path.rglob("requirements.txt"):
 
-        lines = requirements.read_text(errors="ignore").splitlines()
+        try:
+            relative_path = requirements.relative_to(project_path)
+        except ValueError:
+            relative_path = requirements.name
+
+        lines = requirements.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        ).splitlines()
 
         for line_number, line in enumerate(lines, start=1):
 
             line = line.strip()
 
+            # Ignore blank lines and comments
             if not line or line.startswith("#"):
                 continue
 
+            # Only support package==version
             if "==" not in line:
                 continue
 
-            package, version = line.split("==", 1)
+            try:
+                package, version = line.split("==", 1)
+            except ValueError:
+                continue
 
-            package = package.lower().strip()
+            package = package.strip().lower()
             version = version.strip()
 
             if package not in VULNERABLE_PACKAGES:
@@ -83,7 +99,7 @@ def scan_dependencies(project_path: Path) -> list[Finding]:
                 Finding(
                     title=f"Outdated Dependency: {package}",
                     severity=vuln["severity"],
-                    file=str(requirements),
+                    file=str(relative_path),
                     line=line_number,
                     message=(
                         f"{package} {version} is vulnerable. "

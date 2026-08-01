@@ -4,13 +4,11 @@ import { useRef, useState } from "react";
 import { uploadProject } from "@/lib/api";
 
 const SCAN_STEPS = [
-  "Parsing project directory structure...",
-  "Reading package manifest and dependencies...",
-  "Scanning files for vulnerabilities...",
-  "Analyzing routes and API endpoints...",
-  "Locating potential injection points...",
-  "Running security compliance checks...",
-  "Generating vulnerability report..."
+  "Extracting project archive...",
+  "Running Semgrep rules scanner...",
+  "Parsing package dependencies...",
+  "Categorizing security findings...",
+  "Generating audit report..."
 ];
 
 export default function DashboardPage() {
@@ -175,7 +173,7 @@ export default function DashboardPage() {
             onDragLeave={handleDrag}
             onDrop={handleDrop}
             onClick={() => !file && fileInputRef.current?.click()}
-            className={`w-full max-w-3xl border border-line-mute bg-surface-container-high/40 backdrop-blur-md group hover:border-accent/30 transition-all duration-300 relative cursor-pointer p-10 md:p-12`}
+            className={`w-full max-w-3xl border ${dragActive ? 'border-accent bg-surface-container-high/60 shadow-[0_0_15px_rgba(247,181,56,0.15)]' : 'border-line-mute bg-surface-container-high/40'} backdrop-blur-md group hover:border-accent/30 transition-all duration-300 relative cursor-pointer p-10 md:p-12`}
           >
             {file ? (
               /* FILE SELECTED CARD MODE */

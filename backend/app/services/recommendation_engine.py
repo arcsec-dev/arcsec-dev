@@ -8,21 +8,22 @@ def enrich_finding(finding: Finding) -> Finding:
     """
 
     title = finding.title.lower()
+    message = finding.message.lower()
     category = finding.category.lower()
 
     # --------------------------------------------------
     # SQL Injection
     # --------------------------------------------------
-    if "sql" in title or "injection" in category:
+    if "sql" in title or "sql" in message:
+
         finding.explanation = (
-            "SQL Injection occurs when untrusted user input is "
-            "directly included in SQL queries, allowing attackers "
-            "to manipulate the database."
+            "SQL Injection allows attackers to manipulate database "
+            "queries by injecting malicious SQL through user input."
         )
 
         finding.recommendation = (
             "Use parameterized queries or prepared statements instead "
-            "of building SQL queries with string concatenation."
+            "of concatenating SQL strings."
         )
 
         finding.secure_code = (
@@ -30,17 +31,36 @@ def enrich_finding(finding: Finding) -> Finding:
         )
 
     # --------------------------------------------------
-    # Cross Site Scripting
+    # Pickle Deserialization
     # --------------------------------------------------
-    elif "xss" in title or "cross-site scripting" in title:
+    elif "pickle" in title or "pickle" in message:
+
         finding.explanation = (
-            "Cross-Site Scripting (XSS) allows attackers to inject "
-            "malicious JavaScript into web pages viewed by users."
+            "Deserializing untrusted pickle data can execute arbitrary "
+            "Python code and completely compromise the application."
         )
 
         finding.recommendation = (
-            "Escape all untrusted output and sanitize user input. "
-            "Avoid rendering raw HTML."
+            "Avoid using pickle with untrusted input. Prefer JSON or "
+            "another safe serialization format."
+        )
+
+        finding.secure_code = (
+            "data = json.loads(user_input)"
+        )
+
+    # --------------------------------------------------
+    # Cross Site Scripting
+    # --------------------------------------------------
+    elif "xss" in title or "cross-site scripting" in title:
+
+        finding.explanation = (
+            "Cross-Site Scripting (XSS) allows attackers to inject "
+            "malicious JavaScript into pages viewed by users."
+        )
+
+        finding.recommendation = (
+            "Escape output and sanitize user input before rendering."
         )
 
         finding.secure_code = (
@@ -51,14 +71,14 @@ def enrich_finding(finding: Finding) -> Finding:
     # Hardcoded Secrets
     # --------------------------------------------------
     elif "secret" in title or "credential" in title:
+
         finding.explanation = (
-            "Secrets stored in source code may leak through version "
-            "control or application deployments."
+            "Secrets stored in source code may be exposed through "
+            "repositories or deployments."
         )
 
         finding.recommendation = (
-            "Store secrets in environment variables or a secure "
-            "secret management service."
+            "Store secrets in environment variables or a secret manager."
         )
 
         finding.secure_code = (
@@ -69,14 +89,14 @@ def enrich_finding(finding: Finding) -> Finding:
     # File Upload
     # --------------------------------------------------
     elif "upload" in title:
+
         finding.explanation = (
             "Unrestricted file uploads may allow attackers to upload "
-            "malicious files or overwrite existing files."
+            "malicious files."
         )
 
         finding.recommendation = (
-            "Validate file extensions, MIME types and generate "
-            "server-side filenames."
+            "Validate file type, extension and MIME type before saving."
         )
 
         finding.secure_code = (
@@ -87,13 +107,14 @@ def enrich_finding(finding: Finding) -> Finding:
     # Path Traversal
     # --------------------------------------------------
     elif "path" in title or "traversal" in title:
+
         finding.explanation = (
-            "Path Traversal vulnerabilities allow attackers to access "
-            "files outside the intended directory."
+            "Path Traversal vulnerabilities allow access to files "
+            "outside the intended directory."
         )
 
         finding.recommendation = (
-            "Normalize paths and verify they remain inside the "
+            "Normalize paths and verify they remain within the "
             "expected directory."
         )
 
@@ -105,14 +126,15 @@ def enrich_finding(finding: Finding) -> Finding:
     # Command Injection
     # --------------------------------------------------
     elif "command" in title:
+
         finding.explanation = (
             "Command Injection allows attackers to execute arbitrary "
             "system commands."
         )
 
         finding.recommendation = (
-            "Never use shell=True with user input. "
-            "Use subprocess arguments instead."
+            "Avoid shell=True and never pass unsanitized user input "
+            "to system commands."
         )
 
         finding.secure_code = (
@@ -123,12 +145,13 @@ def enrich_finding(finding: Finding) -> Finding:
     # Weak Password Storage
     # --------------------------------------------------
     elif "password" in title:
+
         finding.explanation = (
-            "Passwords must never be stored in plaintext."
+            "Passwords should never be stored in plaintext."
         )
 
         finding.recommendation = (
-            "Hash passwords using bcrypt or Argon2 before storage."
+            "Hash passwords using bcrypt or Argon2."
         )
 
         finding.secure_code = (
@@ -139,9 +162,10 @@ def enrich_finding(finding: Finding) -> Finding:
     # Dependencies
     # --------------------------------------------------
     elif "dependency" in title:
+
         finding.explanation = (
-            "Outdated dependencies may contain publicly known "
-            "security vulnerabilities."
+            "Outdated dependencies may contain publicly known security "
+            "vulnerabilities."
         )
 
         finding.recommendation = (
@@ -157,14 +181,13 @@ def enrich_finding(finding: Finding) -> Finding:
     # Default
     # --------------------------------------------------
     else:
+
         finding.explanation = (
-            "This issue may negatively affect the security of the "
-            "application."
+            "This issue may negatively affect the security of the application."
         )
 
         finding.recommendation = (
-            "Review the affected code and follow secure coding "
-            "best practices."
+            "Review the affected code and follow secure coding best practices."
         )
 
         finding.secure_code = ""

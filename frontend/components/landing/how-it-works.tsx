@@ -80,7 +80,7 @@ export function HowItWorks() {
                 SEE THE <span className="text-xanthous">TRANSFORMATION</span>
               </h2>
               <p className="font-body-lg text-base text-on-surface-variant mb-8 leading-relaxed">
-                Legacy security tools just tell you what's broken. ArcSec shows you exactly how to fix it, maintaining your coding style while hardening the logic.
+                Legacy security tools just tell you what&apos;s broken. ArcSec shows you exactly how to fix it, maintaining your coding style while hardening the logic.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
