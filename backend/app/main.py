@@ -1,6 +1,9 @@
 import zipfile
 from pathlib import Path
-from typing import TypedDict
+try:
+    from typing_extensions import TypedDict
+except ImportError:
+    from typing import TypedDict
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile

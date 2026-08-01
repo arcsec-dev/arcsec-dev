@@ -1,4 +1,5 @@
 import json
+import sys
 import subprocess
 from pathlib import Path
 
@@ -19,10 +20,21 @@ def run_security_scan(project_path: Path) -> list[Finding]:
     Returns a list of Finding objects.
     """
 
+    # Locate semgrep executable in the active virtual environment if possible
+    semgrep_cmd = "semgrep"
+    venv_bin = Path(sys.executable).parent
+    windows_semgrep = venv_bin / "semgrep.exe"
+    unix_semgrep = venv_bin / "semgrep"
+
+    if windows_semgrep.exists():
+        semgrep_cmd = str(windows_semgrep)
+    elif unix_semgrep.exists():
+        semgrep_cmd = str(unix_semgrep)
+
     try:
         result = subprocess.run(
             [
-                "semgrep",
+                semgrep_cmd,
                 "--config=auto",
                 "--json",
                 "--no-git-ignore",
