@@ -11,16 +11,33 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md",
+
         secondary:
           "border border-border bg-transparent text-foreground hover:bg-secondary hover:border-border/80",
-        ghost: "text-muted-foreground hover:bg-secondary hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+
+        danger:
+          "bg-red-600 text-white hover:bg-red-700",
+
+        success:
+          "bg-green-600 text-white hover:bg-green-700",
+
+        outline:
+          "border border-primary text-primary bg-transparent hover:bg-primary/10",
+
+        ghost:
+          "text-muted-foreground hover:bg-secondary hover:text-foreground",
+
+        link:
+          "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-5 py-2",
         sm: "h-9 rounded-md px-4 text-xs",
+
+        default: "h-11 rounded-lg px-7 text-sm",
+
         lg: "h-11 rounded-lg px-7 text-sm",
-        icon: "h-10 w-10",
+
+        icon: "h-10 w-10 p-0",
       },
     },
     defaultVariants: {
@@ -32,19 +49,38 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
+
   asChild?: boolean;
+
+  loading?: boolean;
+
+  fullWidth?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading = false, fullWidth = false, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled || loading}
+        className={cn(
+          buttonVariants({ variant, size }),
+          fullWidth && "w-full",
+          className
+        )}
         {...props}
-      />
+      >
+        {loading ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Loading...
+          </>
+        ) : (
+          children
+        )}
+      </Comp>
     );
   },
 );
