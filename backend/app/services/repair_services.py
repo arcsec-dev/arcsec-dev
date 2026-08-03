@@ -100,6 +100,7 @@ class RepairService:
             except Exception as e:
                 print(f"[ERROR] Failed to repair {file_path}")
                 print(e)
+                raise e
 
         print("\n========== REPAIR COMPLETE ==========\n")
         return repaired_paths

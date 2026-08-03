@@ -1,6 +1,6 @@
 import type { ScanReport } from "@/types/report";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function uploadProject(
   file: File,
@@ -33,7 +33,16 @@ export async function repairProject(uploadId: string) {
   });
 
   if (!response.ok) {
-    throw new Error("Repair failed.");
+    let errorDetail = "Repair failed.";
+    try {
+      const errorJson = await response.json();
+      if (errorJson && errorJson.detail) {
+        errorDetail = errorJson.detail;
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail);
   }
 
   return await response.json();

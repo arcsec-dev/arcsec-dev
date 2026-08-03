@@ -5,19 +5,9 @@ import { downloadSecureProject } from "@/lib/api";
 import type { ScanReport } from "@/types/report";
 import Link from "next/link";
 import { CheckCircle, AlertTriangle, Download, RefreshCw } from "lucide-react";
+import { Findings } from "@/components/report/findings";
 
-type RepairResponse = {
-  success: boolean;
-  total: number;
-  applied_fixes: {
-    file: string;
-    issues: number;
-  }[];
-  manual_review: {
-    file: string;
-    title: string;
-  }[];
-};
+import type { RepairResponse } from "@/types/repair";
 
 export default function ResultsPage() {
   const [report, setReport] = useState<ScanReport | null>(null);
@@ -109,6 +99,7 @@ export default function ResultsPage() {
   const hasAppliedFixes = repairResult.applied_fixes.length > 0;
   const originalHadFindings = report.findings.length > 0;
   const isZeroModifications = !hasAppliedFixes;
+  const isVerified = repairResult.verified;
 
   return (
     <div className="relative z-10 w-full flex flex-col items-center justify-center min-h-full py-6">
@@ -119,7 +110,7 @@ export default function ResultsPage() {
           {isZeroModifications ? (
             <AlertTriangle className="size-[200px] text-amber-500" />
           ) : (
-            <CheckCircle className="size-[200px] text-green-500" />
+            <CheckCircle className={`size-[200px] ${isVerified ? "text-green-500" : "text-amber-500"}`} />
           )}
         </div>
 
@@ -148,14 +139,26 @@ export default function ResultsPage() {
               </>
             ) : (
               <>
-                <span className="font-technical-xs text-xs text-green-500 bg-green-500/10 px-3 py-1 inline-block border border-green-500/20 font-semibold tracking-wider uppercase font-mono">
-                  Remediation Applied
+                <span className={`font-technical-xs text-xs px-3 py-1 inline-block border font-semibold tracking-wider uppercase font-mono ${
+                  isVerified 
+                    ? "text-green-500 bg-green-500/10 border-green-500/20" 
+                    : "text-amber-500 bg-amber-500/10 border-amber-500/20"
+                }`}>
+                  {isVerified ? "Remediation Applied & Scan Verified" : "Remediation Applied (Remaining Issues)"}
                 </span>
                 <h2 className="font-headline-md text-4xl text-on-surface leading-none tracking-tight uppercase">
-                  Code Modifications Applied
+                  {isVerified ? "Vulnerabilities Resolved & Verified" : "Code Patched but Remaining Vulnerabilities"}
                 </h2>
                 <p className="font-body-md text-sm text-on-surface-variant leading-relaxed">
-                  The AI remediation engine applied modifications to **{repairResult.applied_fixes.length} file(s)**. The modified code has been packaged and downloaded automatically.
+                  {isVerified ? (
+                    <>
+                      The AI remediation engine applied modifications to **{repairResult.applied_fixes.length} file(s)**, and the post-repair security scan verified that no vulnerabilities remain. The secured project has been packaged and downloaded.
+                    </>
+                  ) : (
+                    <>
+                      The AI remediation engine modified **{repairResult.applied_fixes.length} file(s)**, but a verification scan detected that some vulnerabilities still remain or need manual attention. Please review the remaining findings below.
+                    </>
+                  )}
                 </p>
               </>
             )}
@@ -231,6 +234,15 @@ export default function ResultsPage() {
           </div>
         </div>
       </div>
+
+      {repairResult.findings_remaining && repairResult.findings_remaining.length > 0 && (
+        <div className="w-full max-w-3xl mt-8">
+          <div className="mb-4 text-xs font-technical-xs text-on-surface-variant font-mono uppercase tracking-wider font-semibold">
+            Vulnerabilities Remaining After Scan Verification
+          </div>
+          <Findings findings={repairResult.findings_remaining} />
+        </div>
+      )}
     </div>
   );
 }

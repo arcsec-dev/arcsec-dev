@@ -75,7 +75,8 @@ export default function ReportPage() {
       console.error(err);
       clearInterval(stepInterval);
       setIsFixing(false);
-      setFixError("Fix remediation failed. Check connection to security backend.");
+      const errMsg = err instanceof Error ? err.message : "Fix remediation failed. Check connection to security backend.";
+      setFixError(errMsg);
     }
   };
 
