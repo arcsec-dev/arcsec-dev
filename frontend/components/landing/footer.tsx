@@ -30,7 +30,7 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             Built for AI-first developers.
           </p>
-          <p className="text-sm text-muted-foreground">© 2026 VibeSec</p>
+          <p className="text-sm text-muted-foreground">Copyright 2026 VibeSec</p>
         </div>
       </div>
     </footer>

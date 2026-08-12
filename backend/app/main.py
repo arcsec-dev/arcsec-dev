@@ -190,11 +190,12 @@ async def repair(request: RepairRequest):
 
     return result
 
+
 @app.get("/download/{upload_id}")
 async def download(upload_id: str):
-    zip_path = TEMP_DIR / f"{upload_id}_secured.zip"
+    zip_path = ACTIVE_REPAIRS.get(upload_id)
 
-    if not zip_path.exists():
+    if zip_path is None or not zip_path.exists():
         raise HTTPException(
             status_code=404,
             detail="Secure project not found.",
