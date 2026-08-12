@@ -1,0 +1,38 @@
+rules:
+  - id: python-shell-true
+    message: Avoid subprocess with shell=True
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern: subprocess.run(..., shell=True, ...)
+    metadata:
+      category: security
+
+  - id: python-eval
+    message: Avoid using eval()
+    severity: ERROR
+    languages:
+      - python
+    pattern: eval(...)
+
+  - id: python-exec
+    message: Avoid using exec()
+    severity: ERROR
+    languages:
+      - python
+    pattern: exec(...)
+
+  - id: flask-debug
+    message: Flask debug mode enabled
+    severity: WARNING
+    languages:
+      - python
+    pattern: app.run(..., debug=True, ...)
+
+  - id: pickle-load
+    message: Unsafe pickle deserialization
+    severity: ERROR
+    languages:
+      - python
+    pattern: pickle.loads(...)
