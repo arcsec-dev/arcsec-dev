@@ -85,7 +85,7 @@ def build_scan_report(
     metadata = ReportMetadata(
         generatedAt=datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
         scanners=[
-            "Semgrep",
+            "OpenGrep",
             "Dependency Scanner",
             "VibeSec Analyzer",
         ],

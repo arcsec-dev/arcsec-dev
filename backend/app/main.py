@@ -112,10 +112,10 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
     # Run Security Scanners
     # --------------------------------------------------
     try:
-        semgrep_findings = run_security_scan(extract_path)
+        opengrep_findings = run_security_scan(extract_path)
         dependency_findings = scan_dependencies(extract_path)
 
-        raw_findings = semgrep_findings + dependency_findings
+        raw_findings = opengrep_findings + dependency_findings
 
         findings = [
             enrich_finding(

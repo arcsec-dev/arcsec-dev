@@ -12,7 +12,7 @@ def extract_snippet(
 
     Args:
         project_path: Root of the extracted project.
-        file_path: Path returned by Semgrep.
+        file_path: Path returned by OpenGrep.
         line_number: Vulnerable line.
         context: Number of surrounding lines.
 
@@ -23,7 +23,7 @@ def extract_snippet(
     try:
         file = Path(file_path)
 
-        # If Semgrep returned an absolute path, use it.
+        # If OpenGrep returned an absolute path, use it.
         if file.is_absolute():
             target = file
 
@@ -31,7 +31,7 @@ def extract_snippet(
             # Otherwise resolve relative to the extracted project.
             target = project_path / file
 
-            # Some Semgrep versions return paths that already include
+            # Some OpenGrep versions return paths that already include
             # the extraction directory. If so, fall back to that.
             if not target.exists():
                 target = Path(file_path)
