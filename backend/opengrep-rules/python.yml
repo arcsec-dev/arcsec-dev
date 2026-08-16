@@ -1,0 +1,147 @@
+rules:
+  # ============================================================
+  # COMMAND INJECTION
+  # ============================================================
+
+  - id: python-shell-true
+    message: Avoid subprocess with shell=True
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern: subprocess.run(..., shell=True, ...)
+    metadata:
+      category: Command Injection
+
+  - id: python-os-system
+    message: Avoid os.system() with user-controlled or untrusted input
+    severity: ERROR
+    languages:
+      - python
+    pattern: os.system(...)
+    metadata:
+      category: Command Injection
+
+  - id: python-os-popen
+    message: Avoid os.popen() for executing system commands
+    severity: ERROR
+    languages:
+      - python
+    pattern: os.popen(...)
+    metadata:
+      category: Command Injection
+
+
+  # ============================================================
+  # CODE INJECTION
+  # ============================================================
+
+  - id: python-eval
+    message: Avoid using eval()
+    severity: ERROR
+    languages:
+      - python
+    pattern: eval(...)
+    metadata:
+      category: Code Injection
+
+  - id: python-exec
+    message: Avoid using exec()
+    severity: ERROR
+    languages:
+      - python
+    pattern: exec(...)
+    metadata:
+      category: Code Injection
+
+  - id: python-compile
+    message: Avoid dynamically compiling untrusted code
+    severity: ERROR
+    languages:
+      - python
+    pattern: compile(...)
+    metadata:
+      category: Code Injection
+
+
+  # ============================================================
+  # INSECURE DESERIALIZATION
+  # ============================================================
+
+  - id: pickle-load
+    message: Unsafe pickle deserialization
+    severity: ERROR
+    languages:
+      - python
+    pattern: pickle.loads(...)
+    metadata:
+      category: Insecure Deserialization
+
+  - id: pickle-load-file
+    message: Unsafe pickle file deserialization
+    severity: ERROR
+    languages:
+      - python
+    pattern: pickle.load(...)
+    metadata:
+      category: Insecure Deserialization
+
+  - id: yaml-unsafe-load
+    message: Unsafe YAML deserialization
+    severity: ERROR
+    languages:
+      - python
+    pattern: yaml.load(...)
+    metadata:
+      category: Insecure Deserialization
+
+
+  # ============================================================
+  # CRYPTOGRAPHY
+  # ============================================================
+
+  - id: python-md5
+    message: MD5 is cryptographically weak and should not be used for security-sensitive hashing
+    severity: WARNING
+    languages:
+      - python
+    pattern: hashlib.md5(...)
+    metadata:
+      category: Weak Cryptography
+
+  - id: python-sha1
+    message: SHA-1 is cryptographically weak and should not be used for security-sensitive hashing
+    severity: WARNING
+    languages:
+      - python
+    pattern: hashlib.sha1(...)
+    metadata:
+      category: Weak Cryptography
+
+
+  # ============================================================
+  # INSECURE TLS
+  # ============================================================
+
+  - id: python-requests-verify-false
+    message: TLS certificate verification is disabled
+    severity: ERROR
+    languages:
+      - python
+    pattern: requests.$METHOD(..., verify=False, ...)
+    metadata:
+      category: Insecure Transport
+
+
+  # ============================================================
+  # FLASK SECURITY
+  # ============================================================
+
+  - id: flask-debug
+    message: Flask debug mode enabled
+    severity: WARNING
+    languages:
+      - python
+    pattern: app.run(..., debug=True, ...)
+    metadata:
+      category: Security Misconfiguration
