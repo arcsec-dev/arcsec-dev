@@ -14,7 +14,7 @@ class GroqProvider:
             raise ValueError("GROQ_API_KEY environment variable not found.")
 
         self.client = Groq(api_key=api_key)
-        self.model = "llama-3.3-70b-versatile"
+        self.model = "openai/gpt-oss-120b"
 
     def repair_code(self, prompt: str) -> str:
         print("\n========== GROQ REPAIR PROMPT ==========")

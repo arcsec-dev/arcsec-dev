@@ -1,5 +1,7 @@
 import zipfile
+import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 try:
     from typing_extensions import TypedDict
 except ImportError:
@@ -10,6 +12,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from pydantic import HttpUrl
 
 from app.models.finding import Finding
 from app.models.report import ScanReport
@@ -60,6 +63,9 @@ class HealthResponse(TypedDict):
 
 class RepairRequest(BaseModel):
     uploadId: str
+
+class RepositoryRequest(BaseModel):
+    url: str
 
 
 @app.get("/health")
@@ -159,6 +165,136 @@ async def upload(file: UploadFile = File(...)) -> ScanReport:
 
     return report
 
+@app.post("/repository", response_model=ScanReport)
+async def scan_repository(request: RepositoryRequest) -> ScanReport:
+    # --------------------------------------------------
+    # Validate Repository URL
+    # --------------------------------------------------
+    parsed_url = urlparse(str(request.url))
+
+    if parsed_url.scheme not in {"http", "https"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid repository URL. Use an HTTP or HTTPS Git repository URL.",
+        )
+
+    if not parsed_url.netloc:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid repository URL.",
+        )
+
+    # --------------------------------------------------
+    # Generate Upload ID
+    # --------------------------------------------------
+    upload_id = str(uuid4())
+
+    # --------------------------------------------------
+    # Repository Directory
+    # --------------------------------------------------
+    repository_path = TEMP_DIR / upload_id
+    repository_path.mkdir(parents=True, exist_ok=True)
+
+    ACTIVE_PROJECTS[upload_id] = repository_path
+
+    # --------------------------------------------------
+    # Clone Repository
+    # --------------------------------------------------
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                str(request.url),
+                str(repository_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode != 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to clone repository: {result.stderr.strip()}",
+            )
+
+    except subprocess.TimeoutExpired:
+        raise HTTPException(
+            status_code=408,
+            detail="Repository download timed out.",
+        )
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500,
+            detail="Git is not installed or is not available in the backend environment.",
+        )
+
+    # --------------------------------------------------
+    # Determine Project Name
+    # --------------------------------------------------
+    project_name = Path(parsed_url.path.rstrip("/")).stem
+
+    if not project_name:
+        project_name = "repository"
+
+    # --------------------------------------------------
+    # Analyze Project
+    # --------------------------------------------------
+    project_info = analyze_project(
+        repository_path,
+        project_name,
+    )
+
+    # --------------------------------------------------
+    # Run Security Scanners
+    # --------------------------------------------------
+    try:
+        opengrep_findings = run_security_scan(repository_path)
+        dependency_findings = scan_dependencies(repository_path)
+
+        raw_findings = opengrep_findings + dependency_findings
+
+        findings = [
+            enrich_finding(
+                categorize_finding(finding)
+            )
+            for finding in raw_findings
+        ]
+
+    except RuntimeError as e:
+        findings = [
+            Finding(
+                title="Scanner Error",
+                severity="ERROR",
+                category="System",
+                file="",
+                line=0,
+                message=str(e),
+                source="ArcSec",
+                snippet="",
+                explanation="",
+                recommendation="Verify the scanner installation and configuration.",
+                secure_code="",
+            )
+        ]
+
+    # --------------------------------------------------
+    # Build Report
+    # --------------------------------------------------
+    report = build_scan_report(
+        status="success",
+        upload_id=upload_id,
+        project_info=project_info,
+        findings=findings,
+    )
+
+    ACTIVE_FINDINGS[upload_id] = findings
+
+    return report
 
 @app.post("/repair", response_model=RepairResult)
 async def repair(request: RepairRequest) -> RepairResult:

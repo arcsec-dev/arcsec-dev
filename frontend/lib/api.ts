@@ -62,4 +62,65 @@ export function downloadSecureProject(uploadId: string) {
   document.body.removeChild(link);
 }
 
+export async function scanRepository(
+  repositoryUrl: string,
+): Promise<ScanReport> {
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(repositoryUrl);
+  } catch {
+    throw new Error(
+      "Invalid repository URL. Please enter a valid Git repository URL.",
+    );
+  }
+
+  if (
+    parsedUrl.protocol !== "http:" &&
+    parsedUrl.protocol !== "https:"
+  ) {
+    throw new Error(
+      "Invalid repository URL. Please use an HTTP or HTTPS URL.",
+    );
+  }
+
+  if (!parsedUrl.hostname) {
+    throw new Error(
+      "Invalid repository URL. Please enter a valid repository URL.",
+    );
+  }
+
+  const response = await fetch(`${API_BASE}/repository`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      url: repositoryUrl,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorDetail = "Failed to scan repository.";
+
+    try {
+      const errorJson = await response.json();
+
+      if (typeof errorJson?.detail === "string") {
+        errorDetail = errorJson.detail;
+      } else if (Array.isArray(errorJson?.detail)) {
+        errorDetail = errorJson.detail
+          .map((item: any) => item?.msg || String(item))
+          .join(", ");
+      }
+    } catch {
+      // Keep default error
+    }
+
+    throw new Error(errorDetail);
+  }
+
+  return await response.json();
+}
+
 export { API_BASE };
