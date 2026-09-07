@@ -33,3 +33,11 @@ REPORT_DIRECTORY = os.getenv(
 MAX_UPLOAD_SIZE = int(
     os.getenv("MAX_UPLOAD_SIZE", 100 * 1024 * 1024)
 )
+
+# Feedback storage / private admin access
+FEEDBACK_DB_PATH = Path(
+    os.getenv("FEEDBACK_DB_PATH", str(BASE_DIR / "data" / "arcsec_feedback.db"))
+)
+
+# Keep this value only in the backend environment. Never expose it to the frontend.
+ADMIN_FEEDBACK_TOKEN = os.getenv("ADMIN_FEEDBACK_TOKEN", "")

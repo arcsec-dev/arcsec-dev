@@ -84,7 +84,7 @@ export function Footer() {
           </h5>
           <ul className="space-y-4 font-body-md text-sm text-on-surface-variant">
             <li>
-              <a className="hover:text-on-surface transition-colors" href="#">
+              <a className="hover:text-on-surface transition-colors" href="/privacy">
                 Privacy Policy
               </a>
             </li>

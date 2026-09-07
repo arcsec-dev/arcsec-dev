@@ -145,3 +145,119 @@ rules:
     pattern: app.run(..., debug=True, ...)
     metadata:
       category: Security Misconfiguration
+
+
+  # ============================================================
+  # SQL INJECTION
+  # ============================================================
+
+  - id: python-sql-concat
+    message: Potential SQL injection through string concatenation
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern-either:
+          - pattern: $CURSOR.execute($QUERY + $INPUT)
+          - pattern: $CURSOR.execute($INPUT + $QUERY)
+    metadata:
+      category: SQL Injection
+      cwe: CWE-89
+
+  - id: python-sql-fstring
+    message: Potential SQL injection through f-string SQL construction
+    severity: ERROR
+    languages:
+      - python
+    pattern: $CURSOR.execute(f"...")
+    metadata:
+      category: SQL Injection
+      cwe: CWE-89
+
+  - id: python-sql-format
+    message: Potential SQL injection through string formatting
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern-either:
+          - pattern: $CURSOR.execute("...".format(...))
+          - pattern: $CURSOR.execute($QUERY.format(...))
+    metadata:
+      category: SQL Injection
+      cwe: CWE-89
+
+  # ============================================================
+  # PATH TRAVERSAL / UNSAFE FILE ACCESS
+  # ============================================================
+
+  - id: python-open-user-path
+    message: File path may be constructed from untrusted input
+    severity: ERROR
+    languages:
+      - python
+    pattern: open($PATH, ...)
+    metadata:
+      category: Path Traversal
+      cwe: CWE-22
+
+  - id: python-file-user-path
+    message: Filesystem operation may use an untrusted path
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern-either:
+          - pattern: os.remove($PATH)
+          - pattern: os.unlink($PATH)
+          - pattern: os.rename($PATH, ...)
+          - pattern: shutil.copy($PATH, ...)
+          - pattern: shutil.move($PATH, ...)
+    metadata:
+      category: Path Traversal
+      cwe: CWE-22
+
+  # ============================================================
+  # SERVER-SIDE REQUEST FORGERY
+  # ============================================================
+
+  - id: python-requests-user-url
+    message: Potential SSRF through dynamically supplied request URL
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern-either:
+          - pattern: requests.get($URL, ...)
+          - pattern: requests.post($URL, ...)
+          - pattern: requests.put($URL, ...)
+          - pattern: requests.delete($URL, ...)
+          - pattern: requests.request(..., url=$URL, ...)
+    metadata:
+      category: SSRF
+      cwe: CWE-918
+
+  # ============================================================
+  # CROSS-SITE SCRIPTING
+  # ============================================================
+
+  - id: flask-markup
+    message: Potential cross-site scripting through unsafe HTML markup
+    severity: ERROR
+    languages:
+      - python
+    pattern: markupsafe.Markup(...)
+    metadata:
+      category: Cross-Site Scripting
+      cwe: CWE-79
+
+  - id: flask-mark-safe
+    message: Potential cross-site scripting through unsafe HTML rendering
+    severity: ERROR
+    languages:
+      - python
+    pattern: mark_safe(...)
+    metadata:
+      category: Cross-Site Scripting
+      cwe: CWE-79
+      

@@ -8,7 +8,7 @@ except ImportError:
     from typing import TypedDict
 from uuid import uuid4
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -17,6 +17,7 @@ from pydantic import HttpUrl
 from app.models.finding import Finding
 from app.models.report import ScanReport
 from app.models.repair_result import RepairResult, AppliedFix, ManualReview
+from app.models.feedback import FeedbackCreate, FeedbackResponse
 from app.services.analyzer import analyze_project
 from app.services.categorizer import categorize_finding
 from app.services.dependency_scanner import scan_dependencies
@@ -24,6 +25,8 @@ from app.services.recommendation_engine import enrich_finding
 from app.services.report_builder import build_scan_report
 from app.services.repair_engine import RepairEngine
 from app.services.scanner import run_security_scan
+from app.services.feedback_store import FeedbackStore
+from app.utils.config import ADMIN_FEEDBACK_TOKEN, FEEDBACK_DB_PATH
 
 app = FastAPI(
     title="VibeSec API",
@@ -47,6 +50,8 @@ TEMP_DIR = Path("temp")
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
+FEEDBACK_STORE = FeedbackStore(FEEDBACK_DB_PATH)
 
 # --------------------------------------------------
 # Active Uploads (MVP)
@@ -422,6 +427,41 @@ async def repair(request: RepairRequest) -> RepairResult:
     )
 
 
+
+@app.post("/feedback", response_model=FeedbackResponse)
+async def submit_feedback(feedback: FeedbackCreate) -> FeedbackResponse:
+    """Store one private rating/review for a completed project."""
+    # The backend enforces the same 1-5 rating rule as the frontend.
+    if feedback.uploadId not in ACTIVE_PROJECTS:
+        raise HTTPException(status_code=404, detail="Project not found.")
+
+    if FEEDBACK_STORE.has_feedback(feedback.uploadId):
+        raise HTTPException(status_code=409, detail="Feedback has already been submitted for this project.")
+
+    saved = FEEDBACK_STORE.save_feedback(
+        upload_id=feedback.uploadId,
+        rating=feedback.rating,
+        review=feedback.review.strip(),
+    )
+
+    if saved is None:
+        raise HTTPException(status_code=409, detail="Feedback has already been submitted for this project.")
+
+    return saved
+
+
+@app.get("/admin/feedback", response_model=list[FeedbackResponse])
+async def get_feedback(authorization: str | None = Header(default=None)) -> list[FeedbackResponse]:
+    """Private endpoint for the ArcSec owner/admin only."""
+    if not ADMIN_FEEDBACK_TOKEN:
+        raise HTTPException(status_code=503, detail="Admin feedback access is not configured.")
+
+    expected = f"Bearer {ADMIN_FEEDBACK_TOKEN}"
+    if authorization != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized.")
+
+    return FEEDBACK_STORE.list_feedback()
+
 @app.get("/download/{upload_id}")
 async def download(upload_id: str):
     zip_path = ACTIVE_REPAIRS.get(upload_id)
@@ -430,6 +470,13 @@ async def download(upload_id: str):
         raise HTTPException(
             status_code=404,
             detail="Secure project not found.",
+        )
+
+    # Server-side download gate: a browser/localStorage flag cannot bypass this.
+    if not FEEDBACK_STORE.has_feedback(upload_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Please submit a star rating before downloading the secured project.",
         )
 
     return FileResponse(

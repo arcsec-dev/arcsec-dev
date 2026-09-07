@@ -32,7 +32,11 @@ def run_security_scan(project_path: Path) -> list[Finding]:
 
 
     # Locate the OpenGrep rules folder
-    rules_path = Path(__file__).resolve().parents[2] / "opengrep-rules"
+    rules_path = (
+        Path(__file__).resolve().parents[2]
+        / "opengrep-rules"
+        / "active"
+    )
 
     # Verify the rules folder exists
     if not rules_path.exists():
@@ -78,10 +82,12 @@ def run_security_scan(project_path: Path) -> list[Finding]:
         result = subprocess.run(
             [
                 "opengrep",
+                "scan",
                 "--config",
                 str(rules_path),
                 "--json",
                 "--no-git-ignore",
+                "--x-ignore-semgrepignore-files",
                 *[str(file) for file in source_files],
             ],
             capture_output=True,

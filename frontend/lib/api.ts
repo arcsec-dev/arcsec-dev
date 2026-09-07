@@ -48,6 +48,42 @@ export async function repairProject(uploadId: string) {
   return await response.json();
 }
 
+export async function submitFeedback(
+  uploadId: string,
+  rating: number,
+  review: string,
+) {
+  const response = await fetch(`${API_BASE}/feedback`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      uploadId,
+      rating,
+      review,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorDetail = "Failed to submit feedback.";
+
+    try {
+      const errorJson = await response.json();
+
+      if (typeof errorJson?.detail === "string") {
+        errorDetail = errorJson.detail;
+      }
+    } catch {
+      // Keep default error
+    }
+
+    throw new Error(errorDetail);
+  }
+
+  return await response.json();
+}
+
 export function downloadSecureProject(uploadId: string) {
   const link = document.createElement("a");
 
