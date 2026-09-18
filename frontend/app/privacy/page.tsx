@@ -1,7 +1,12 @@
+import { Navbar } from "@/components/landing/navbar";
+
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-background text-on-surface px-6 py-16 md:px-10">
-      <div className="max-w-[1000px] mx-auto">
+    <div className="min-h-screen bg-background text-on-surface">
+      <Navbar />
+
+      <main className="min-h-screen px-6 py-16 md:px-10">
+        <div className="max-w-[1000px] mx-auto">
 
         {/* HEADER */}
         <div className="border-b border-line-mute pb-10 mb-12">
@@ -343,11 +348,11 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-      </div>
-    </main>
+              </div>
+      </main>
+    </div>
   );
 }
-
 
 /* ============================================================
    REUSABLE COMPONENTS

@@ -1,0 +1,9 @@
+.venv
+__pycache__
+*.pyc
+.env
+uploads
+temp
+reports
+data/*.db
+opengrep-test
